@@ -31,7 +31,6 @@ func (t Target) worker(ports, results chan int){
 
 		// convert and cat the IP and Port as a string
 		var sock = t.ip + ":" + strconv.Itoa(p)
-		fmt.Println("[-]", sock)
 
 		// creates connection
 		var conn, err = net.DialTimeout("tcp", sock, time.Second * 2)
@@ -41,12 +40,10 @@ func (t Target) worker(ports, results chan int){
 			results <- p
 			_ = conn.Close()
 		} else {
-			fmt.Println("[-] error:", err)
 			results <- 0
 		}
 		continue
 	}
-	fmt.Println("left worker")
 }
 
 
@@ -181,7 +178,6 @@ func (t Target) smbCheck() {
 
 	// print the output from enum4linux
 	fmt.Println(string(stderrstdout))
-
 }
 
 // TODO
@@ -259,7 +255,7 @@ func main() {
 		fmt.Println("[-] Try \"-h\" or \"--help\" for arguments")
 	} else if *p > 65535 {
 		fmt.Println("[-]")
-	} else if *i != "" {
+	} else {
 		tgt.ip = *i
 		tgt.amt = *p
 		tgt.portsCap = *w
@@ -272,12 +268,6 @@ func main() {
 		fmt.Println("[+] Workers Setup:", tgt.portsCap)
 		fmt.Println()
 
-		tgt.start()
-	} else {
-		tgt.ip = "10.10.10.175"
-		tgt.amt = 200
-		tgt.portsCap = 100
-		tgt.nmapOptions = "-sT"
 		tgt.start()
 	}
 }
