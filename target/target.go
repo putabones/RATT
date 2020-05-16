@@ -1,6 +1,7 @@
 package target
 
 import (
+	"RATT/target/checks"
 	"RATT/target/structs"
 	"fmt"
 	"github.com/cheggaaa/pb/v3"
@@ -13,6 +14,22 @@ import (
 
 // Define any structs we plan to use
 type Target structs.Target
+type ThirdParty structs.Thirdparty
+
+// Hold a struct for our binary checks
+var ThirdPartyChecks ThirdParty
+
+// This needs to match any changes in structs/thirdparty.go
+func checkBinary() {
+
+	ThirdPartyChecks = ThirdParty{
+		Bash:       checks.CheckInPath("bash"),
+		Enum4linux: checks.CheckInPath("enum4linux"),
+		Smbclient:  checks.CheckInPath("smbclient"),
+		Nmap:       checks.CheckInPath("nmap"),
+	}
+
+}
 
 // port check method
 func (t Target) portCheck(ports, results chan int, b *pb.ProgressBar) {
@@ -33,8 +50,17 @@ func (t Target) portCheck(ports, results chan int, b *pb.ProgressBar) {
 // smb checks
 func (t Target) smbCheck(c chan string) {
 
-	t.Smbclient()
-	t.Enum4linux()
+	if ThirdPartyChecks.Smbclient || ThirdPartyChecks.Bash {
+		t.Smbclient()
+	} else {
+		fmt.Println("[!] Smbclient or Bash not found in path")
+	}
+
+	if ThirdPartyChecks.Enum4linux || ThirdPartyChecks.Bash {
+		t.Enum4linux()
+	} else {
+		fmt.Println("[!] Enum4linux or Bash not found in path")
+	}
 
 	// send signal to channel that scan is done
 	c <- "SMB"
@@ -43,6 +69,9 @@ func (t Target) smbCheck(c chan string) {
 
 // start scanning
 func (t Target) Start() {
+
+	// Return true/false for binaries needed
+	checkBinary()
 
 	var ports = make(chan int, t.PortsCap) // channel to hold port numbers to be scanned
 	var results = make(chan int)           // channel to hold open ports
@@ -107,7 +136,11 @@ func (t Target) Start() {
 	close(results)
 
 	// Do nmap
-	t.Nmap()
+	if ThirdPartyChecks.Nmap || ThirdPartyChecks.Bash {
+		t.Nmap()
+	} else {
+		fmt.Println("[!] Nmap or Bash not found in path")
+	}
 
 	// close channel catch in case there is no answer to smb check
 	if ans == "Y" {

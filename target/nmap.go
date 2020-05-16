@@ -8,6 +8,7 @@ import (
 
 // nmap method
 func (t *Target) Nmap() {
+
 	var str []string
 
 	// combines the open ports
