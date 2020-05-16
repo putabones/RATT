@@ -1,9 +1,9 @@
 package main
 
 import (
+	"RATT/target"
 	"fmt"
 	"github.com/akamensky/argparse"
-	"github.com/putabones/RATT/Target"
 	"os"
 )
 
@@ -20,8 +20,8 @@ import (
 // 		- enum4linux
 
 // parses user inputs
-func parserFunc(t *Target.Target) {
-	var parse = argparse.NewParser("RATT", "RATT stands for \"Recon All The Things\", it will perform " +
+func parserFunc(t *target.Target) {
+	var parse = argparse.NewParser("RATT", "RATT stands for \"Recon All The Things\", it will perform "+
 		"scans against a target that is as intrusive as you want. Version: 1.3")
 
 	var i = parse.String("i", "ip", &argparse.Options{
@@ -91,8 +91,9 @@ func parserFunc(t *Target.Target) {
 
 // main
 func main() {
+
 	// new target
-	var tgt = new(Target.Target)
+	var tgt = new(target.Target)
 
 	// parse user input
 	parserFunc(tgt)

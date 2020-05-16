@@ -1,0 +1,4 @@
+nmap
+smbclient
+enum4linux
+bash
