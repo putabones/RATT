@@ -16,16 +16,15 @@ RATT stands for "Recon All The Things", its purpose is to speed up scanning and 
 -p|--ports <integer>     Number of ports to scan. NOTE: Not the actual port numbers. i.e 100=ports 1-100.
 -w|--workers <integer>   Number of scans to take place simultaneously. Default: 100
 -n|--hostname "<value>"  Hostname of the device. It will later give the options to save to host file.
+-b|--banner              Boolean, if present, indicates you want banners to be grabbed if possible
 ```
 
 ### RATT Help Output
 
 ```
-./RATT -h
-
 usage: RATT [-h|--help] -i|--ip "<value>" [-f|--folder "<value>"] [-o|--nmap
             "<value>"] [-p|--ports <integer>] [-w|--workers <integer>]
-            [-n|--hostname "<value>"]
+            [-n|--hostname "<value>"] [-b|--banner]
 
             RATT stands for "Recon All The Things", it will perform scans
             against a target that is as intrusive as you want. Version: 1.3
@@ -40,4 +39,6 @@ Arguments:
   -w  --workers   Amount of concurrent workers to spawn. Default: 100
   -n  --hostname  Hostname for your target, will be added to host file if
                   added. Default: NoName
+  -b  --banner    Banner grabs on open TCP Ports. Default: false
+
 ```
