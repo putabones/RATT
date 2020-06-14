@@ -1,9 +1,9 @@
 package main
 
 import (
-	"RATT/target"
 	"fmt"
 	"github.com/akamensky/argparse"
+	"github.com/putabones/RATT/target"
 	"os"
 )
 
@@ -14,10 +14,6 @@ import (
 // 		- dirb http://10.10.10.180 /usr/share/wordlists/dirb/small.txt -x /usr/share/wordlists/dirb/extensions_common.txt
 // 	- add showmount listing method
 // 		- sudo showmount -e 10.10.10.180
-// 	- add on disk save location
-// 	- add "|tee" to save outputs individually
-// 		- smbclient
-// 		- enum4linux
 
 // parses user inputs
 func parserFunc(t *target.Target) {
@@ -70,6 +66,13 @@ func parserFunc(t *target.Target) {
 		Default:  "NoName",
 	})
 
+	var b = parse.Flag("b", "banner", &argparse.Options{
+		Required: false,
+		Validate: nil,
+		Help:     "Banner grabs on open TCP Ports",
+		Default:  false,
+	})
+
 	// check inputs
 	err := parse.Parse(os.Args)
 	if err != nil {
@@ -86,6 +89,7 @@ func parserFunc(t *target.Target) {
 		t.PortsCap = *w
 		t.Hostname = *n
 		t.Folder = *f
+		t.Banner = *b
 	}
 }
 
