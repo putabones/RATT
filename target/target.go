@@ -122,8 +122,8 @@ func (t Target) Start() {
 	}
 
 	// port 445 check
-	for p := range t.Tcpopen {
-		if t.Tcpopen[p] == 445 {
+	for _, p := range t.Tcpopen {
+		if p == 445 {
 			fmt.Println()
 			fmt.Print("[+] Port 445 open, do you want to run SMB Checks? Y/N: ")
 			fmt.Scanln(&ans)
@@ -131,10 +131,7 @@ func (t Target) Start() {
 				go t.smbCheck(smb)
 			} else {
 				fmt.Println("[-] Not scanning 445")
-				close(smb)
 			}
-		} else {
-			close(smb)
 		}
 	}
 
@@ -149,9 +146,13 @@ func (t Target) Start() {
 		fmt.Println("[!] Nmap or Bash not found in path")
 	}
 
-	// Checks the SMB channel, will break out of loop once the channel is closed from smbCheck()
-	for s := range smb {
-		fmt.Printf("[+] %v Checks Complete\n", s)
+	// Checks the SMB channel, closes once checks are done, if you choose not to scan, or 445 wasnt open
+	if ans == "Y" {
+		for s := range smb {
+			fmt.Printf("[+] %v Checks Complete\n", s)
+		}
+	} else {
+		close(smb)
 	}
 }
 
