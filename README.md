@@ -1,6 +1,6 @@
 # RATT
 
-RATT stands for "Recon All The Things", its purpose is to speed up scanning and service enumeration by using Golang's concurrency.  Currently it has only been tested on Linux, Windows compatibility will br coming out in future versions.
+RATT stands for "Recon All The Things", its purpose is to speed up scanning and service enumeration by using Golang's concurrency.  Works on both Linux and Windows, some scans are dependent on packages that are installed.
 
 #### Version: 1.5
 
