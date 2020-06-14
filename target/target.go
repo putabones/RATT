@@ -1,50 +1,34 @@
-package Target
+package target
 
 import (
+	"RATT/target/checks"
+	"RATT/target/structs"
 	"fmt"
 	"github.com/cheggaaa/pb/v3"
 	"net"
-	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// target struct
-type Target struct {
-	Ip          string
-	Hostname    string
-	Tcpopen     []int
-	Amt         int
-	PortsCap    int
-	Results     chan int
-	NmapOptions string
-	Folder      string
-}
+// Define any structs we plan to use
+type Target structs.Target
+type ThirdParty structs.Thirdparty
 
-// nmap method
-func (t Target) nmap() {
-	var str []string
+// Hold a struct for our binary checks
+var ThirdPartyChecks ThirdParty
 
-	// combines the open ports
-	for p := range t.Tcpopen {
-		str = append(str, strconv.Itoa(t.Tcpopen[p]))
+// This needs to match any changes in structs/thirdparty.go
+func checkBinary() {
+
+	ThirdPartyChecks = ThirdParty{
+		Bash:       checks.CheckInPath("bash"),
+		Enum4linux: checks.CheckInPath("enum4linux"),
+		Smbclient:  checks.CheckInPath("smbclient"),
+		Nmap:       checks.CheckInPath("nmap"),
 	}
 
-	// set the nmap command to a string
-	var command = "nmap " + t.NmapOptions + " -p " + strings.Join(str, ",") + " " + t.Ip + " -oA " + t.Folder + "/" + t.Hostname + "_" + t.Ip
-
-	// nmap command execution
-	var cmd = exec.Command("bash", "-c", command)
-	fmt.Println("[+] nmap command:", cmd.String())
-
-	stderrstdout, err := cmd.CombinedOutput()
-	if err != nil{
-		fmt.Println("[-] Broke on nmap, check command; Error:", err)
-	} else {
-		fmt.Println("[+] nmap output:\n", string(stderrstdout))
-	}
 }
 
 // port check method
@@ -65,28 +49,18 @@ func (t Target) portCheck(ports, results chan int, b *pb.ProgressBar) {
 
 // smb checks
 func (t Target) smbCheck(c chan string) {
-	// setting smbclient command string, then executing
-	var command = " smbclient -L //" + t.Ip + " -N -U anonymous " + "| tee " +  t.Folder + "/" + "smbclient_" + t.Hostname + "_" + t.Ip + ".out"
-	fmt.Println("[+] Running:", command)
-	var cmd = exec.Command("bash", "-c", command)
-	var stderrstdout, err = cmd.CombinedOutput()
-	if err != nil{
-		fmt.Println("[-] smbclient error:", err)
+
+	if ThirdPartyChecks.Smbclient || ThirdPartyChecks.Bash {
+		t.Smbclient()
+	} else {
+		fmt.Println("[!] Smbclient or Bash not found in path")
 	}
 
-	// print the output from smbclient
-	fmt.Println(string(stderrstdout))
-
-	command = " enum4linux -a " + t.Ip + " | tee " + t.Folder + "/" + "enum_" + t.Hostname + "_" + t.Ip + ".out"
-	fmt.Println("[+] Running:", command)
-	cmd = exec.Command("bash", "-c", command)
-	stderrstdout, err = cmd.CombinedOutput()
-	if err != nil{
-		fmt.Println("[-] enum4linux error:", err)
+	if ThirdPartyChecks.Enum4linux || ThirdPartyChecks.Bash {
+		t.Enum4linux()
+	} else {
+		fmt.Println("[!] Enum4linux or Bash not found in path")
 	}
-
-	// print the output from enum4linux
-	fmt.Println(string(stderrstdout))
 
 	// send signal to channel that scan is done
 	c <- "SMB"
@@ -95,6 +69,10 @@ func (t Target) smbCheck(c chan string) {
 
 // start scanning
 func (t Target) Start() {
+
+	// Return true/false for binaries needed
+	checkBinary()
+
 	var ports = make(chan int, t.PortsCap) // channel to hold port numbers to be scanned
 	var results = make(chan int)           // channel to hold open ports
 	var smb = make(chan string)            // channel for smb scan
@@ -114,7 +92,7 @@ func (t Target) Start() {
 
 	// append results to slice
 	for i := 0; i < t.Amt; i++ {
-		p := <- results
+		p := <-results
 		if p != 0 {
 			t.Tcpopen = append(t.Tcpopen, p)
 		}
@@ -157,7 +135,12 @@ func (t Target) Start() {
 	close(ports)
 	close(results)
 
-	t.nmap()
+	// Do nmap
+	if ThirdPartyChecks.Nmap || ThirdPartyChecks.Bash {
+		t.Nmap()
+	} else {
+		fmt.Println("[!] Nmap or Bash not found in path")
+	}
 
 	// close channel catch in case there is no answer to smb check
 	if ans == "Y" {
@@ -170,9 +153,9 @@ func (t Target) Start() {
 }
 
 // worker method
-func (t Target) worker(ports, results chan int, b * pb.ProgressBar){
+func (t Target) worker(ports, results chan int, b *pb.ProgressBar) {
 	// loop for 100 ports per Go routine
-	for p := range ports{
+	for p := range ports {
 		// progress bar
 		b.Increment()
 
@@ -180,7 +163,7 @@ func (t Target) worker(ports, results chan int, b * pb.ProgressBar){
 		var sock = t.Ip + ":" + strconv.Itoa(p)
 
 		// creates connection
-		var conn, err = net.DialTimeout("tcp", sock, time.Second * 2)
+		var conn, err = net.DialTimeout("tcp", sock, time.Second*2)
 
 		// either adds the port or a 0
 		if err == nil {
