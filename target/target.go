@@ -133,6 +133,8 @@ func (t Target) Start() {
 				fmt.Println("[-] Not scanning 445")
 				close(smb)
 			}
+		} else {
+			close(smb)
 		}
 	}
 
