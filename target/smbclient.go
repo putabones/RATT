@@ -1,8 +1,8 @@
 package target
 
 import (
-	"RATT/target/helpers"
 	"fmt"
+	"github.com/putabones/RATT/target/helpers"
 )
 
 func (t *Target) Smbclient() {

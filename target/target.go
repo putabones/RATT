@@ -1,10 +1,10 @@
 package target
 
 import (
-	"RATT/target/checks"
-	"RATT/target/structs"
 	"fmt"
 	"github.com/cheggaaa/pb/v3"
+	"github.com/putabones/RATT/target/checks"
+	"github.com/putabones/RATT/target/structs"
 	"net"
 	"sort"
 	"strconv"
@@ -116,6 +116,11 @@ func (t Target) Start() {
 	var duration = end.Sub(start)
 	fmt.Println("Scan Time:", duration.Truncate(time.Millisecond))
 
+	// check for banner grab option
+	if t.Banner {
+		t.BannerGrab()
+	}
+
 	// port 445 check
 	for p := range t.Tcpopen {
 		if t.Tcpopen[p] == 445 {
@@ -131,7 +136,7 @@ func (t Target) Start() {
 		}
 	}
 
-	// close channels and bar
+	// close channels
 	close(ports)
 	close(results)
 
@@ -142,13 +147,9 @@ func (t Target) Start() {
 		fmt.Println("[!] Nmap or Bash not found in path")
 	}
 
-	// close channel catch in case there is no answer to smb check
-	if ans == "Y" {
-		for s := range smb {
-			fmt.Printf("[+] %v Checks Complete\n", s)
-		}
-	} else {
-		close(smb)
+	// Checks the SMB channel, will break out of loop once the channel is closed from smbCheck()
+	for s := range smb {
+		fmt.Printf("[+] %v Checks Complete\n", s)
 	}
 }
 

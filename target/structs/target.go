@@ -10,4 +10,5 @@ type Target struct {
 	Results     chan int
 	NmapOptions string
 	Folder      string
+	Banner		bool
 }

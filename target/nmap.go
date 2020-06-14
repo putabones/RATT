@@ -1,7 +1,7 @@
 package target
 
 import (
-	"RATT/target/helpers"
+	"github.com/putabones/RATT/target/helpers"
 	"strconv"
 	"strings"
 )
