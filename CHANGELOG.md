@@ -1,5 +1,5 @@
 # Changelog
-## [2.0] - TBD
+## [2.0] - 07 May 2025
 - Lots of code clen up and refactoring, too many to list
 - Created new mode: CLI, made the original Live Mode
 - Created structs folder and moved all methods related to each struct to their respctive files, vice it being separate as before
